@@ -11,24 +11,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const PORT = process.env.PORT || 3000;
 
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-function validateEmail(email) {
-    return emailRegex.test(email);
-}
-
-function validateBody(user) {
-    const error = [];
-     if (user.name && user.name.length < 10) {
-        errors.push('El campo Nombre debe tener al menos 10 carácteres');
-    }
-
-    if (user.email && !validateEmail(user.email)) {
-        errors.push('El campo Email ingresado no es válido');
-    }
-    return error;
-}
-
 app.get('/', (req, res) => {
     res.send(`
         <h1>Curso Express.js</h1>
@@ -135,9 +117,28 @@ app.put('/users/:id', (req, res) => {
           .status(500)
           .json({ error: 'Error al actualizar el usuario' });
       }
-      res.json(updatedUser);
+      res.status(200).json(updatedUser);
     });
   });
+});
+
+app.delete('/users/:id', (req, res) => {
+    const userId = parseInt(req.params.id);
+    fs.readFile(usersFilePath, 'utf-8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: 'Error con conexiÃ³n de datos.' });
+        }
+        let users = JSON.parse(data);
+        users = users.filter(user => user.id !== userId);
+        fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), err => {
+            if (err) {
+                return res
+                .status(500)
+                .json({ error: 'Error al actualizar el usuario' });
+            }
+            res.status(204).send();
+        });
+    });
 });
 
 app.listen(PORT, () => {
