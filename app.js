@@ -1,5 +1,12 @@
 require('dotenv').config();
 const express = require('express');
+const { PrismaClient } = require('./generated/prisma');
+const prisma = new PrismaClient();
+
+const LoggerMiddleware = require('./middlewares/logger');
+const ErrorHandlerMiddleware = require('./middlewares/error-handler');
+const { validateUser } = require('./util/validation');
+
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const PATH = require('path');
@@ -8,6 +15,8 @@ const usersFilePath = PATH.join(__dirname, 'user.json');
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(LoggerMiddleware);
+app.use(ErrorHandlerMiddleware);
 
 const PORT = process.env.PORT || 3000;
 
@@ -74,7 +83,7 @@ app.post('/users', (req, res) => {
   const newUser = req.body;
   fs.readFile(usersFilePath, 'utf-8', (err, data) => {
     if (err) {
-      return res.status(500).json({ error: 'Error con conexiÃ³n de datos.' });
+      return res.status(500).json({ error: 'Error con conexión de datos.' });
     }
     const users = JSON.parse(data);
 
@@ -99,7 +108,7 @@ app.put('/users/:id', (req, res) => {
 
   fs.readFile(usersFilePath, 'utf8', (err, data) => {
     if (err) {
-      return res.status(500).json({ error: 'Error con conexiÃ³n de datos.' });
+      return res.status(500).json({ error: 'Error con conexión de datos.' });
     }
     let users = JSON.parse(data);
 
@@ -139,6 +148,20 @@ app.delete('/users/:id', (req, res) => {
             res.status(204).send();
         });
     });
+});
+
+app.get('/error', (req, res, next) => {
+    next(new Error('Error intencional'));
+});
+
+
+app.get('/db-users', async (req, res) => {
+    try {
+        const users = await prisma.user.findMany();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al comunicarse con la base de datos'});
+    }
 });
 
 app.listen(PORT, () => {
