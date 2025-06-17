@@ -185,6 +185,24 @@ app.post('/register', async (req, res) => {
   res.status(201).json({ message: 'User Register Succesfully', data: newUser});
 });
 
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  const user = await prisma.user.findUnique({ where: { email }});
+  if(!user) res.status(400).json({ error: 'Invalid email or password'});
+  const validPassword = await bcrypt.hash(password, 10);
+  if(!user.password === validPassword) res.status(400).json({ error: 'Invalid email or password'});
+
+  const token = jwt.sign({ 
+      id: user.id, 
+      role: user.role 
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' }
+  );
+  res.json({ token });
+
+});
+
 app.listen(PORT, () => {
     console.log(`Server: http://localhost:${PORT}`);
 });
