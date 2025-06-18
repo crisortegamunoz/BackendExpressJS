@@ -24,7 +24,7 @@ const listReservations = async(req, res) => {
         const reservations = await listReservationsService();
         return res.status(200).json(reservations)
     } catch(error) {
-        res.status(500).json({ error: 'Error fetching reservations', message: error.message});
+        res.status(500).json({ error: 'Error fetching reservations' });
     }
 }
 
