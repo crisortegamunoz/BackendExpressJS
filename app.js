@@ -5,10 +5,10 @@ const prisma = new PrismaClient();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const LoggerMiddleware = require('./middlewares/logger');
-const ErrorHandlerMiddleware = require('./middlewares/error-handler');
-const { validateUser } = require('./util/validation');
-const authenticateToken = require('./middlewares/auth');
+const LoggerMiddleware = require('./src/middlewares/logger');
+const ErrorHandlerMiddleware = require('./src/middlewares/error-handler');
+const { validateUser } = require('./src/util/validation');
+const authenticateToken = require('./src/middlewares/auth');
 
 const bodyParser = require('body-parser');
 const fs = require('fs');
